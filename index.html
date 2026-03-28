@@ -3,18 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0d1117" />
+  <meta name="theme-color" content="#0d0814" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Deine persönliche App gegen Angstzustände – Atemübungen, Journaling, Affirmationen & SOS" />
   <title>Calm</title>
   <link rel="manifest" href="/public/manifest.json" />
   <link rel="stylesheet" href="/src/styles/main.css" />
 </head>
 <body>
+
+<!-- Aurora Background -->
+<div class="aurora-bg">
+  <div class="aurora-layer"></div>
+  <div class="aurora-layer"></div>
+  <div class="aurora-layer"></div>
+  <div class="aurora-layer"></div>
+</div>
+
+<!-- Wave Canvas -->
+<canvas id="wave-canvas"></canvas>
+
 <div id="app">
 
-  <!-- ── HOME ─────────────────────────── -->
+  <!-- ── HOME ── -->
   <section class="view active" id="view-home">
     <div class="home-header">
       <p class="greeting">Willkommen zurück</p>
@@ -44,10 +55,10 @@
         <span class="label">Stärke</span>
         <span class="title">Affirmation</span>
       </div>
-      <div class="quick-card" onclick="navigate('sos')" style="border-color:rgba(232,140,140,0.2);">
-        <span class="icon">🆘</span>
-        <span class="label">Notfall</span>
-        <span class="title" style="color:var(--danger);">SOS</span>
+      <div class="quick-card" onclick="navigate('meditation')">
+        <span class="icon">🧘</span>
+        <span class="label">Ruhe</span>
+        <span class="title">Meditation</span>
       </div>
     </div>
 
@@ -57,65 +68,146 @@
     </div>
   </section>
 
-  <!-- ── BREATHING ──────────────────────── -->
+  <!-- ── BREATHING + SOUNDS ── -->
   <section class="view" id="view-breath">
     <h2>Atemübung</h2>
-    <p style="margin-bottom:24px;">Lass deinen Atem dein Anker sein.</p>
+    <p style="margin-bottom:20px;">Lass deinen Atem dein Anker sein.</p>
 
     <div class="breath-patterns">
-      <button class="pattern-chip active" data-pattern="4-7-8" onclick="selectPattern('4-7-8')">4-7-8 Beruhigung</button>
-      <button class="pattern-chip" data-pattern="box" onclick="selectPattern('box')">Box Breathing</button>
-      <button class="pattern-chip" data-pattern="2-1-4" onclick="selectPattern('2-1-4')">2-1-4 Schnell</button>
+      <button class="pattern-chip active" data-pattern="4-7-8" onclick="selectPattern('4-7-8')">4-7-8</button>
+      <button class="pattern-chip" data-pattern="box" onclick="selectPattern('box')">Box</button>
+      <button class="pattern-chip" data-pattern="2-1-4" onclick="selectPattern('2-1-4')">2-1-4</button>
     </div>
 
     <div class="breath-container">
       <div class="breath-circle-wrap">
-        <div class="breath-ring" id="breath-ring"></div>
+        <div class="breath-wave-ring"></div>
+        <div class="breath-wave-ring"></div>
+        <div class="breath-wave-ring"></div>
         <div class="breath-orb" id="breath-orb" onclick="startBreathing()">
           <span class="phase-text" id="breath-phase">Tippen</span>
           <span class="count-text" id="breath-count">▷</span>
         </div>
       </div>
-
       <div class="breath-cycles" id="breath-cycles"></div>
-
-      <div style="display:flex;gap:12px;margin-top:20px;">
+      <div style="display:flex;gap:12px;margin-top:16px;">
         <button class="btn btn-primary" id="btn-breath-start" onclick="startBreathing()">Starten</button>
         <button class="btn btn-ghost" id="btn-breath-stop" onclick="stopBreathing()" style="display:none;">Stoppen</button>
       </div>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-      <p class="section-label">Über 4-7-8</p>
-      <p style="font-size:0.85rem;">Entwickelt von Dr. Andrew Weil – aktiviert den Parasympathikus und reduziert Cortisol innerhalb von Minuten.</p>
+    <!-- Sounds -->
+    <div class="card" style="margin-top:8px;">
+      <p class="section-label">Beruhigende Klänge</p>
+      <div class="sound-grid">
+        <button class="sound-btn" id="snd-rain" onclick="toggleSound('rain')">
+          <span class="sound-icon">🌧️</span>Regen
+        </button>
+        <button class="sound-btn" id="snd-ocean" onclick="toggleSound('ocean')">
+          <span class="sound-icon">🌊</span>Wellen
+        </button>
+        <button class="sound-btn" id="snd-forest" onclick="toggleSound('forest')">
+          <span class="sound-icon">🌲</span>Wald
+        </button>
+        <button class="sound-btn" id="snd-wind" onclick="toggleSound('wind')">
+          <span class="sound-icon">💨</span>Wind
+        </button>
+        <button class="sound-btn" id="snd-fire" onclick="toggleSound('fire')">
+          <span class="sound-icon">🔥</span>Feuer
+        </button>
+        <button class="sound-btn" id="snd-silence" onclick="stopAllSounds()">
+          <span class="sound-icon">🔇</span>Stille
+        </button>
+      </div>
+      <div class="volume-row">
+        <span>🔈</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="setVolume(this.value)" />
+        <span>🔊</span>
+      </div>
     </div>
   </section>
 
-  <!-- ── JOURNAL ────────────────────────── -->
-  <section class="view" id="view-journal">
-    <div class="journal-header">
-      <div>
-        <h2>Journal</h2>
-        <p>Schreib, was dich bewegt.</p>
+  <!-- ── MEDITATION ── -->
+  <section class="view" id="view-meditation">
+    <h2>Meditation</h2>
+    <p style="margin-bottom:24px;">Geführte Übungen für innere Ruhe.</p>
+
+    <div class="meditation-player" id="meditation-player">
+      <p style="font-size:0.75rem;color:var(--text3);margin-bottom:8px;" id="meditation-title-active"></p>
+      <div class="meditation-step" id="meditation-step-text">Bereit?</div>
+      <div class="meditation-progress">
+        <div class="meditation-progress-bar" id="meditation-bar"></div>
       </div>
+      <p style="font-size:0.78rem;color:var(--text3);margin-bottom:16px;" id="meditation-step-counter"></p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-ghost" onclick="stopMeditation()">Beenden</button>
+      </div>
+    </div>
+
+    <p class="section-label">Übungen</p>
+
+    <div class="meditation-card" onclick="startMeditation('ankommen')">
+      <div class="meditation-icon">🌅</div>
+      <div class="meditation-info">
+        <div class="meditation-title">Ankommen</div>
+        <div class="meditation-meta">Für den Einstieg · <span class="meditation-duration">5 Min</span></div>
+      </div>
+    </div>
+
+    <div class="meditation-card" onclick="startMeditation('angst')">
+      <div class="meditation-icon">🫧</div>
+      <div class="meditation-info">
+        <div class="meditation-title">Angst loslassen</div>
+        <div class="meditation-meta">Bei Angstzuständen · <span class="meditation-duration">8 Min</span></div>
+      </div>
+    </div>
+
+    <div class="meditation-card" onclick="startMeditation('koerper')">
+      <div class="meditation-icon">🌿</div>
+      <div class="meditation-info">
+        <div class="meditation-title">Body Scan</div>
+        <div class="meditation-meta">Körperwahrnehmung · <span class="meditation-duration">10 Min</span></div>
+      </div>
+    </div>
+
+    <div class="meditation-card" onclick="startMeditation('schlaf')">
+      <div class="meditation-icon">🌙</div>
+      <div class="meditation-info">
+        <div class="meditation-title">Einschlafen</div>
+        <div class="meditation-meta">Für die Nacht · <span class="meditation-duration">7 Min</span></div>
+      </div>
+    </div>
+
+    <div class="meditation-card" onclick="startMeditation('dankbarkeit')">
+      <div class="meditation-icon">💛</div>
+      <div class="meditation-info">
+        <div class="meditation-title">Dankbarkeit</div>
+        <div class="meditation-meta">Positive Ausrichtung · <span class="meditation-duration">6 Min</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── JOURNAL ── -->
+  <section class="view" id="view-journal">
+    <div style="margin-bottom:20px;">
+      <h2>Journal</h2>
+      <p>Schreib, was dich bewegt.</p>
     </div>
 
     <div class="journal-new card">
       <p class="section-label">Neuer Eintrag</p>
       <textarea id="journal-input" placeholder="Was denkst du gerade? Was fühlst du?"></textarea>
-
       <p class="section-label" style="margin-top:14px;">Stimmung</p>
       <div class="journal-mood">
-        <button class="mood-btn" data-mood="calm" onclick="selectMood('calm')" title="Ruhig">😌</button>
-        <button class="mood-btn" data-mood="anxious" onclick="selectMood('anxious')" title="Ängstlich">😰</button>
-        <button class="mood-btn" data-mood="sad" onclick="selectMood('sad')" title="Traurig">😔</button>
-        <button class="mood-btn" data-mood="angry" onclick="selectMood('angry')" title="Wütend">😤</button>
-        <button class="mood-btn" data-mood="neutral" onclick="selectMood('neutral')" title="Neutral">😐</button>
+        <button class="mood-btn" data-mood="calm" onclick="selectMood('calm')">😌</button>
+        <button class="mood-btn" data-mood="anxious" onclick="selectMood('anxious')">😰</button>
+        <button class="mood-btn" data-mood="sad" onclick="selectMood('sad')">😔</button>
+        <button class="mood-btn" data-mood="angry" onclick="selectMood('angry')">😤</button>
+        <button class="mood-btn" data-mood="neutral" onclick="selectMood('neutral')">😐</button>
       </div>
-
       <div class="journal-actions">
         <button class="btn btn-primary" onclick="submitJournal()">Speichern</button>
-        <span style="font-size:0.75rem;color:var(--text3);align-self:center;">Claude antwortet einfühlsam ✦</span>
+        <span style="font-size:0.75rem;color:var(--text3);align-self:center;">Claude antwortet ✦</span>
       </div>
     </div>
 
@@ -123,7 +215,7 @@
     <div id="journal-entries"></div>
   </section>
 
-  <!-- ── AFFIRMATIONS ───────────────────── -->
+  <!-- ── AFFIRMATIONS ── -->
   <section class="view" id="view-affirmations">
     <h2>Affirmationen</h2>
     <p style="margin-bottom:24px;">Worte, die dich tragen.</p>
@@ -139,26 +231,24 @@
 
     <div class="ai-affirmation-section">
       <p class="section-label">KI-Affirmation generieren</p>
-      <p style="font-size:0.82rem;margin-bottom:4px;">Worüber brauchst du gerade Kraft?</p>
-      <input id="affirmation-topic" type="text" placeholder="z. B. soziale Situationen, Selbstwert, Zukunft…" />
+      <p style="font-size:0.82rem;">Worüber brauchst du gerade Kraft?</p>
+      <input id="affirmation-topic" type="text" placeholder="z. B. soziale Situationen, Selbstwert…" />
       <button class="btn btn-primary" id="btn-gen-affirmation" onclick="generateAffirmation()">Generieren</button>
     </div>
   </section>
 
-  <!-- ── SOS ────────────────────────────── -->
+  <!-- ── SOS ── -->
   <section class="view" id="view-sos">
     <div class="sos-header">
       <h2>🆘 Notfall & SOS</h2>
-      <p style="color:var(--danger);font-size:0.85rem;margin-top:6px;">Du bist nicht allein. Hilfe ist da.</p>
+      <p style="color:var(--danger);font-size:0.85rem;margin-top:6px;">Du bist nicht allein.</p>
     </div>
 
-    <!-- Quick Breath -->
     <div class="card" style="margin-bottom:20px;text-align:center;">
       <p style="font-size:0.85rem;margin-bottom:12px;">Sofortübung: Tief einatmen und langsam ausatmen.</p>
       <button class="btn btn-primary" onclick="navigate('breath')">Jetzt Atemübung</button>
     </div>
 
-    <!-- Contacts -->
     <p class="section-label">Meine Notfallkontakte</p>
     <div id="contacts-list"></div>
 
@@ -166,7 +256,7 @@
       <p class="section-label">Kontakt hinzufügen</p>
       <input id="contact-name" type="text" placeholder="Name" />
       <input id="contact-phone" type="tel" placeholder="Telefonnummer" />
-      <input id="contact-relation" type="text" placeholder="Beziehung (z. B. Mama, Freundin…)" />
+      <input id="contact-relation" type="text" placeholder="Beziehung (z. B. Mama)" />
       <div style="display:flex;gap:8px;margin-top:4px;">
         <button class="btn btn-primary" onclick="addContact()">Speichern</button>
         <button class="btn btn-ghost" onclick="toggleContactForm(false)">Abbrechen</button>
@@ -175,74 +265,43 @@
 
     <button class="btn btn-ghost" style="width:100%;margin-bottom:24px;" onclick="toggleContactForm(true)">+ Kontakt hinzufügen</button>
 
-    <!-- Crisis Lines -->
     <div class="crisis-lines">
       <p class="section-label">Krisentelefone</p>
-
       <div class="crisis-line">
-        <div class="crisis-line-info">
-          <div class="name">Telefonseelsorge</div>
-          <div class="num">0800 111 0 111 · kostenlos, 24/7</div>
-        </div>
+        <div class="crisis-line-info"><div class="name">Telefonseelsorge</div><div class="num">0800 111 0 111 · kostenlos, 24/7</div></div>
         <a href="tel:08001110111" class="call-btn">Anrufen</a>
       </div>
-
       <div class="crisis-line">
-        <div class="crisis-line-info">
-          <div class="name">Telefonseelsorge</div>
-          <div class="num">0800 111 0 222 · kostenlos, 24/7</div>
-        </div>
+        <div class="crisis-line-info"><div class="name">Telefonseelsorge</div><div class="num">0800 111 0 222 · kostenlos, 24/7</div></div>
         <a href="tel:08001110222" class="call-btn">Anrufen</a>
       </div>
-
       <div class="crisis-line">
-        <div class="crisis-line-info">
-          <div class="name">Notarzt / Feuerwehr</div>
-          <div class="num">112 · Medizinischer Notfall</div>
-        </div>
+        <div class="crisis-line-info"><div class="name">Notarzt</div><div class="num">112 · Medizinischer Notfall</div></div>
         <a href="tel:112" class="call-btn">Anrufen</a>
-      </div>
-
-      <div class="crisis-line">
-        <div class="crisis-line-info">
-          <div class="name">Online-Beratung</div>
-          <div class="num">online-beratung.de</div>
-        </div>
-        <a href="https://www.online-beratung.de" target="_blank" class="call-btn">Öffnen</a>
       </div>
     </div>
   </section>
 
-  <!-- ── BOTTOM NAV ────────────────────── -->
+  <!-- ── NAV ── -->
   <nav>
     <button id="nav-home" class="active" onclick="navigate('home')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
       Start
     </button>
     <button id="nav-breath" onclick="navigate('breath')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4"/></svg>
       Atem
     </button>
+    <button id="nav-meditation" onclick="navigate('meditation')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>
+      Ruhe
+    </button>
     <button id="nav-journal" onclick="navigate('journal')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       Journal
     </button>
-    <button id="nav-affirmations" onclick="navigate('affirmations')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-      Kraft
-    </button>
     <button id="nav-sos" onclick="navigate('sos')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <span style="color:var(--danger)">SOS</span>
     </button>
   </nav>
