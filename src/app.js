@@ -345,7 +345,7 @@ function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
   state.apiKey = key;
   localStorage.setItem('calm_api_key', key);
-  document.getElementById('api-key-input').type = 'password';
+  document.getElementById('api-banner').style.display = 'none';
   showToast('API-Key gespeichert ✓');
 }
 
@@ -371,6 +371,7 @@ function init() {
   if (state.apiKey) {
     document.getElementById('api-key-input').value = '••••••••••••••••';
     document.getElementById('api-key-input').type = 'password';
+    document.getElementById('api-banner').style.display = 'none';
   }
 
   navigate('home');
