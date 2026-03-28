@@ -282,8 +282,8 @@ function startMeditation(key) {
   state.meditation.total = med.steps.reduce((s, step) => s + step.duration, 0);
 
   document.getElementById('meditation-title-active').textContent = med.title;
-  document.getElementById('meditation-player').classList.add('active');
-  document.getElementById('meditation-cards').style.display = 'none';
+  document.getElementById('meditation-list-view').style.display = 'none';
+  document.getElementById('meditation-player-view').style.display = 'block';
   document.getElementById('meditation-bar').style.width = '0%';
   document.getElementById('view-meditation').scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -295,7 +295,14 @@ function runMeditationStep(key) {
   const step = med.steps[state.meditation.stepIndex];
   if (!step || !state.meditation.running) return;
 
-  document.getElementById('meditation-step-text').textContent = step.text;
+  const textEl = document.getElementById('meditation-step-text');
+  textEl.style.opacity = '0';
+  setTimeout(() => {
+    textEl.textContent = step.text;
+    textEl.style.opacity = '1';
+    textEl.style.transition = 'opacity 0.6s ease';
+  }, 200);
+
   document.getElementById('meditation-step-counter').textContent =
     `Schritt ${state.meditation.stepIndex + 1} von ${med.steps.length}`;
 
@@ -308,6 +315,10 @@ function runMeditationStep(key) {
     const totalElapsed = totalPrev + elapsed;
     const pct = (totalElapsed / state.meditation.total) * 100;
     document.getElementById('meditation-bar').style.width = pct + '%';
+
+    const remaining = step.duration - elapsed;
+    const timeEl = document.getElementById('meditation-time-left');
+    if (timeEl) timeEl.textContent = remaining > 0 ? `noch ${remaining}s` : '';
 
     if (elapsed >= step.duration) {
       clearInterval(state.meditation.timer);
@@ -323,17 +334,25 @@ function runMeditationStep(key) {
 
 function finishMeditation() {
   state.meditation.running = false;
-  document.getElementById('meditation-step-text').textContent = 'Wunderbar. Du hast es geschafft. 🌸';
-  document.getElementById('meditation-step-counter').textContent = 'Meditation abgeschlossen';
+  const textEl = document.getElementById('meditation-step-text');
+  textEl.style.opacity = '0';
+  setTimeout(() => {
+    textEl.textContent = 'Wunderbar. Du hast es geschafft. 🌸';
+    textEl.style.opacity = '1';
+    textEl.style.transition = 'opacity 0.6s ease';
+  }, 200);
+  document.getElementById('meditation-step-counter').textContent = 'Abgeschlossen';
+  const timeEl = document.getElementById('meditation-time-left');
+  if (timeEl) timeEl.textContent = '';
   document.getElementById('meditation-bar').style.width = '100%';
 }
 
 function stopMeditation() {
   state.meditation.running = false;
   clearInterval(state.meditation.timer);
-  document.getElementById('meditation-player').classList.remove('active');
+  document.getElementById('meditation-player-view').style.display = 'none';
+  document.getElementById('meditation-list-view').style.display = 'block';
   document.getElementById('meditation-bar').style.width = '0%';
-  document.getElementById('meditation-cards').style.display = 'block';
 }
 
 // ── API ────────────────────────────────────────
@@ -569,7 +588,7 @@ function saveApiKey() {
 
 function showToast(msg) {
   const t = document.createElement('div');
-  t.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff6b9d,#c084fc);color:white;padding:10px 20px;border-radius:50px;font-size:0.82rem;font-weight:500;z-index:999;animation:fadeUp 0.3s ease`;
+  t.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#6b7fc4,#9b8ec4);color:white;padding:10px 20px;border-radius:50px;font-size:0.82rem;font-weight:500;z-index:999;animation:fadeUp 0.3s ease`;
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2200);
