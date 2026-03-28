@@ -244,10 +244,10 @@ function initWaves() {
   window.addEventListener('resize', resize);
 
   const waves = [
-    { amp: 18, period: 0.012, speed: 0.012, color: 'rgba(255,107,157,0.35)', y: 0.55 },
-    { amp: 14, period: 0.018, speed: 0.008, color: 'rgba(192,132,252,0.3)', y: 0.65 },
-    { amp: 10, period: 0.022, speed: 0.015, color: 'rgba(251,146,60,0.25)', y: 0.75 },
-    { amp: 8,  period: 0.028, speed: 0.006, color: 'rgba(244,114,182,0.2)', y: 0.85 },
+    { amp: 18, period: 0.012, speed: 0.0025, color: 'rgba(255,107,157,0.35)', y: 0.55 },
+    { amp: 14, period: 0.018, speed: 0.0018, color: 'rgba(192,132,252,0.3)', y: 0.65 },
+    { amp: 10, period: 0.022, speed: 0.003,  color: 'rgba(251,146,60,0.25)', y: 0.75 },
+    { amp: 8,  period: 0.028, speed: 0.0012, color: 'rgba(244,114,182,0.2)', y: 0.85 },
   ];
 
   function draw() {
@@ -278,11 +278,14 @@ function startMeditation(key) {
 
   state.meditation.running = true;
   state.meditation.stepIndex = 0;
+  state.meditation.currentKey = key;
   state.meditation.total = med.steps.reduce((s, step) => s + step.duration, 0);
 
   document.getElementById('meditation-title-active').textContent = med.title;
   document.getElementById('meditation-player').classList.add('active');
-  document.getElementById('meditation-player').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('meditation-cards').style.display = 'none';
+  document.getElementById('meditation-bar').style.width = '0%';
+  document.getElementById('view-meditation').scrollTo({ top: 0, behavior: 'smooth' });
 
   runMeditationStep(key);
 }
@@ -330,6 +333,7 @@ function stopMeditation() {
   clearInterval(state.meditation.timer);
   document.getElementById('meditation-player').classList.remove('active');
   document.getElementById('meditation-bar').style.width = '0%';
+  document.getElementById('meditation-cards').style.display = 'block';
 }
 
 // ── API ────────────────────────────────────────
